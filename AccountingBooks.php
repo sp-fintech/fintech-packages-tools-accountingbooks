@@ -24,20 +24,33 @@ class AccountingBooks extends BasePackage
         $this->getFirst('id', $id);
 
         if ($this->model) {
-            $portfolio = $this->model->toArray();
+            $book = $this->model->toArray();
 
-            $portfolio['accounts'] = [];
+            $book['accounts'] = [];
             if ($this->model->getaccounts()) {
-                $portfolio['accounts'] = $this->model->getaccounts()->toArray();
+                $book['accounts'] = $this->model->getaccounts()->toArray();
             }
         } else {
             if ($this->ffData) {
-                $portfolio = $this->jsonData($this->ffData, true);
+                $book = $this->jsonData($this->ffData, true);
             }
         }
 
-        if ($portfolio) {
-            return $portfolio;
+        if ($book) {
+            if ($book['accounts'] && count($book['accounts']) > 0) {
+                $bookAccounts = [];
+
+                foreach ($book['accounts'] as $account) {
+                    $bookAccounts[$account['uuid']] = $account;
+                    if ($account['balance'] < 0) {
+                        $warnings[$account['uuid']] = $account['name'] . ' has negative balance!';
+                    }
+                }
+
+                $book['accounts'] = $bookAccounts;
+            }
+
+            return $book;
         }
 
         return false;
