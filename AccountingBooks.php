@@ -131,6 +131,7 @@ class AccountingBooks extends BasePackage
 
         return $data;
     }
+
     public function removeAccountingBook($id)
     {
         $accountingbook = $this->getById($id);
@@ -148,5 +149,38 @@ class AccountingBooks extends BasePackage
         }
 
         $this->addResponse('Error removing book', 1);
+    }
+
+    public function getBooksByAccountId($data)
+    {
+        if ($this->config->databasetype === 'db') {
+            $conditions =
+                [
+                    'conditions'    => 'account_id = :account_id:',
+                    'bind'          =>
+                        [
+                            'account_id'       => (int) $data['account_id'],
+                        ]
+                ];
+        } else {
+            $conditions =
+                [
+                    'conditions'    => ['account_id', '=', (int) $data['account_id']]
+                ];
+        }
+
+        $booksArr = $this->getByParams($conditions);
+
+        $books = [];
+
+        if ($booksArr && count($booksArr) > 0) {
+            foreach ($booksArr as $book) {
+                $books[$book['id']] = $this->getAccountingBookById($book['id']);
+            }
+
+            return $books;
+        }
+
+        return [];
     }
 }
