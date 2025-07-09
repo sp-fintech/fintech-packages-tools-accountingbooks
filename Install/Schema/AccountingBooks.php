@@ -60,7 +60,7 @@ class AccountingBooks
                     ]
                 ),
                 new Column(
-                    'status',//open/close
+                    'status',//open/closed
                     [
                         'type'          => Column::TYPE_VARCHAR,
                         'size'          => 10,

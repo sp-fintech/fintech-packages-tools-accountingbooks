@@ -81,16 +81,29 @@ class AccountingBooks extends BasePackage
 
     public function updateAccountingBook($data)
     {
-        $accountingbooks = $this->getById($id);
-
-        if ($accountingbooks) {
-            //
-            $this->addResponse('Success');
-
-            return;
+        if (!$data = $this->checkData($data)) {
+            return false;
         }
 
-        $this->addResponse('Error', 1);
+        $accountingbook = $this->getById($data['id']);
+
+        if (!$accountingbook) {
+            $this->addResponse('Book with ID not found', 1);
+
+            return false;
+        }
+
+        $accountingbook = array_merge($accountingbook, $data);
+
+        if ($this->update($accountingbook)) {
+            $this->addResponse('Updated book');
+
+            return true;
+        }
+
+        $this->addResponse('Error updating book', 1);
+
+        return false;
     }
 
     protected function checkData($data)
@@ -151,7 +164,7 @@ class AccountingBooks extends BasePackage
         $this->addResponse('Error removing book', 1);
     }
 
-    public function getBooksByAccountId($data)
+    public function getBooksByAccountId($data, $status = 'open')
     {
         if ($this->config->databasetype === 'db') {
             $conditions =
@@ -160,12 +173,13 @@ class AccountingBooks extends BasePackage
                     'bind'          =>
                         [
                             'account_id'       => (int) $data['account_id'],
+                            'status'           => $status,
                         ]
                 ];
         } else {
             $conditions =
                 [
-                    'conditions'    => ['account_id', '=', (int) $data['account_id']]
+                    'conditions'    => [['account_id', '=', (int) $data['account_id']], ['status', '=', $status]]
                 ];
         }
 
